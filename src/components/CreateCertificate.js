@@ -1,17 +1,17 @@
 import React from "react";
-import { Button, Text } from "@geist-ui/react";
+import { Text } from "@geist-ui/react";
 import { useParams } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
-import { getCertificateInfo } from "../firebase/api";
-import { firebaseApp } from "../firebase/init";
+// import { getCertificateInfo } from "../firebase/api";
+// import { firebaseApp } from "../firebase/init";
 
 export const CreateCertificate = ({ user }) => {
   const mounted = useRef(false);
   const params = useParams();
   //   const user = firebaseApp.auth().currentUser;
-  const [data, setData] = useState(null);
+  const [data] = useState(null);
 
-  const onCertificateReceive = () => {};
+  //   const onCertificateReceive = () => {};
 
   useEffect(() => {
     if (!mounted.current) {

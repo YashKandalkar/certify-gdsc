@@ -34,6 +34,6 @@ export const getCertificateInfo = (
     .catch((err) => console.error(err));
 };
 
-const uploadImage = (user, certificateUid) => {
+export const uploadImage = (user, certificateUid) => {
   firebaseApp.storage().ref(`certificates/${user.uid}/${certificateUid}/`);
 };
