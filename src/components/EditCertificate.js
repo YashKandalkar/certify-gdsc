@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Note, Spinner, Text, Image, Progress } from "@geist-ui/react";
+import { Note, Spinner, Text, Progress } from "@geist-ui/react";
 import { useParams } from "react-router-dom";
 import {
   getCertificateInfo,
@@ -9,6 +9,7 @@ import {
 import { toTitleCase } from "../utils";
 import { Upload } from "@geist-ui/react-icons";
 import { useDropzone } from "react-dropzone";
+import { Certificate } from "./Certificate";
 
 const centerDiv = {
   minHeight: "40vh",
@@ -133,10 +134,7 @@ export const EditCertificate = ({ user }) => {
             )}
           </>
         ) : (
-          <Image
-            style={{ maxWidth: 640, margin: "0 auto" }}
-            src={data.imageUrl}
-          />
+          <Certificate id={params.id} data={data} />
         )
       ) : (
         <div style={centerDiv}>

@@ -11,6 +11,8 @@ export const createCertificate = (user, title, onFinish, onError) => {
         title,
         imageUrl: true,
         nameTextBoxBounds: true,
+        textColor: "#000",
+        textFont: 20,
       });
       firebaseApp
         .database()
