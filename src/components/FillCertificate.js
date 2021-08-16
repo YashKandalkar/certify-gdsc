@@ -12,11 +12,14 @@ import {
   Card,
   useModal,
   Spacer,
+  Button,
 } from "@geist-ui/react";
+import { Download } from "@geist-ui/react-icons";
 
 export const FillCertificate = ({ user }) => {
   const [data, setData] = useState(null);
   const [name, setName] = useState("");
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const mounted = useRef(false);
   const nameInputRef = useRef(null);
   const imageRef = useRef(null);
@@ -59,15 +62,59 @@ export const FillCertificate = ({ user }) => {
     setVisible(false);
   };
 
-  window.onresize = () => {};
+  const onDownloadClick = () => {
+    setDownloadLoading(true);
+    // draws the image on canvas, draws the text on the canvas, then saves the image
+    const canvas = document.createElement("canvas");
+    canvas.width = imageRef.current.width;
+    canvas.height = imageRef.current.height;
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
 
-  // useEffect(() => {
-  //   console.log(1);
-  //   return () => {};
-  // }, [window.innerHeight, window.innerWidth]);
+    img.setAttribute("crossOrigin", "Anonymous");
+    img.onload = () => {
+      ctx.font = data.textFont.toString() + "px Arial";
+      ctx.fillStyle = data.textColor;
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        imageRef.current.width,
+        imageRef.current.height
+      );
+
+      ctx.fillText(
+        name,
+        bounds.xPercent * imageRef.current.width,
+        bounds.yPercent * imageRef.current.height
+      );
+
+      console.log(
+        bounds.xPercent * imageRef.current.width,
+        bounds.yPercent * imageRef.current.height
+      );
+
+      const link = document.getElementById("link");
+      link.setAttribute("download", "test.png");
+      link.setAttribute(
+        "href",
+        canvas
+          .toDataURL("image/png")
+          .replace("image/png", "image/octet-stream")
+      );
+      console.log("downloading");
+      link.click();
+      setDownloadLoading(false);
+    };
+    img.src = data.imageUrl;
+  };
 
   return (
     <div>
+      <a href={"/"} id="link" style={{ display: "none" }}>
+        a
+      </a>
       {user ? (
         data === null ? (
           <div style={centerDiv}>
@@ -97,6 +144,7 @@ export const FillCertificate = ({ user }) => {
               {toTitleCase(data.title)}
             </Text>
             <Divider />
+            <Spacer h={1} />
             <Card style={{ display: "flex", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Text p style={{ margin: "0 16px 0 0" }}>
@@ -109,13 +157,14 @@ export const FillCertificate = ({ user }) => {
                 />
               </div>
             </Card>
-            <Spacer h={3} />
+            <Spacer h={1.5} />
             <div
               style={{
                 position: "relative",
                 maxWidth: 640,
                 margin: "0 auto",
                 borderRadius: "4px",
+                lineHeight: 0,
               }}
             >
               <img
@@ -141,6 +190,19 @@ export const FillCertificate = ({ user }) => {
                 </div>
               )}
             </div>
+            <Button
+              type={"success"}
+              loading={downloadLoading}
+              style={{
+                margin: "1rem auto",
+                display: "flex",
+                alignItems: "center",
+              }}
+              onClick={onDownloadClick}
+            >
+              <Download size={20} />
+              &nbsp;&nbsp; Download
+            </Button>
             <Modal
               disableBackdropClick
               keyboard={false}

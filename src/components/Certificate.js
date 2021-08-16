@@ -121,6 +121,10 @@ export const Certificate = ({ data, id }) => {
           ref={imageRef}
           src={data.imageUrl}
           onLoad={() => setImageLoaded(true)}
+          style={{
+            borderRadius: 6,
+            boxShadow: "rgb(136 136 136) 3px 3px 5px",
+          }}
         />
         {imageLoaded ? (
           <Rnd

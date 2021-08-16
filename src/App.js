@@ -35,6 +35,7 @@ function App({ firebaseApp }) {
             style={{
               display: "flex",
               alignItems: "center",
+              marginTop: "1rem",
             }}
           >
             <Link href="/">

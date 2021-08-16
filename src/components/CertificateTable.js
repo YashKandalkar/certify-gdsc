@@ -19,7 +19,7 @@ import {
   getCertificates,
 } from "../firebase/api";
 import { firebaseApp } from "../firebase/init";
-import { toTitleCase } from "../utils";
+import { copyTextToClipboard, toTitleCase } from "../utils";
 
 export const CertificateTable = () => {
   const [loading, setLoading] = useState(false);
@@ -74,9 +74,20 @@ export const CertificateTable = () => {
               </Link>
             ),
             share: (
-              <Link href={`/fill/${key}`}>
-                <Share2 size={20} />
-              </Link>
+              <div style={{ cursor: "pointer" }}>
+                <Share2
+                  size={20}
+                  onClick={() => {
+                    copyTextToClipboard(
+                      document.location.href + "fill/" + key
+                    );
+                    setToast({
+                      text: "Share link copied to clipboard",
+                      type: "success",
+                    });
+                  }}
+                />
+              </div>
             ),
             delete: (
               <div style={{ cursor: "pointer" }}>
@@ -98,7 +109,7 @@ export const CertificateTable = () => {
     return () => {
       mounted.current = false;
     };
-  }, [setDeleteVisible, user, certToDelete]);
+  }, [setDeleteVisible, user, certToDelete, setToast]);
 
   return (
     <div>
