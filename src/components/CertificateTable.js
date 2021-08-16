@@ -9,20 +9,32 @@ import {
   Link,
   Spacer,
   Spinner,
+  useToasts,
 } from "@geist-ui/react";
 import { Edit2, Share2, Trash } from "@geist-ui/react-icons";
 import { useState } from "react";
-import { createCertificate, getCertificates } from "../firebase/api";
+import {
+  createCertificate,
+  deleteCertificate,
+  getCertificates,
+} from "../firebase/api";
 import { firebaseApp } from "../firebase/init";
 import { toTitleCase } from "../utils";
 
 export const CertificateTable = () => {
   const [loading, setLoading] = useState(false);
   const [certs, setCerts] = useState(null);
+  const [certToDelete, setCertToDelete] = useState(null);
   const mounted = useRef(false);
   const inputRef = useRef(null);
+  const [, setToast] = useToasts();
   const user = firebaseApp.auth().currentUser;
   const { visible, setVisible, bindings } = useModal();
+  const {
+    visible: deleteVisible,
+    setVisible: setDeleteVisible,
+    bindings: deleteBindings,
+  } = useModal();
 
   const onCreate = (refKey) => {
     window.location.href = `/edit/${refKey}`;
@@ -37,8 +49,16 @@ export const CertificateTable = () => {
     }
   };
 
+  const onDelete = () => {
+    deleteCertificate(user, certToDelete, () => {
+      setToast({ text: "Certificate deleted", type: "success" });
+    });
+    setCertToDelete(null);
+    setDeleteVisible(false);
+  };
+
   useEffect(() => {
-    if (!mounted.current) {
+    if (!mounted.current && certToDelete === null) {
       mounted.current = true;
       getCertificates(user, (data) => {
         const tableData = Object.entries(data).map(([key, cert]) => {
@@ -58,7 +78,18 @@ export const CertificateTable = () => {
                 <Share2 size={20} />
               </Link>
             ),
-            delete: <Trash color="red" size={20} />,
+            delete: (
+              <div style={{ cursor: "pointer" }}>
+                <Trash
+                  color="red"
+                  size={20}
+                  onClick={() => {
+                    setDeleteVisible(true);
+                    setCertToDelete(key);
+                  }}
+                />
+              </div>
+            ),
           };
         });
         setCerts(tableData);
@@ -67,7 +98,7 @@ export const CertificateTable = () => {
     return () => {
       mounted.current = false;
     };
-  }, [user]);
+  }, [setDeleteVisible, user, certToDelete]);
 
   return (
     <div>
@@ -140,6 +171,23 @@ export const CertificateTable = () => {
         </Modal.Action>
         <Modal.Action loading={loading} onClick={onCreateClick}>
           Create
+        </Modal.Action>
+      </Modal>
+      <Modal visible={deleteVisible} {...deleteBindings}>
+        <Modal.Title>Delete</Modal.Title>
+        <Modal.Subtitle>Delete Certificate</Modal.Subtitle>
+        <Modal.Content>
+          <p>
+            Are you sure you want to delete this certificate?
+            <br />
+            All the responses from this certificate will be deleted as well.
+          </p>
+        </Modal.Content>
+        <Modal.Action passive onClick={() => setDeleteVisible(false)}>
+          Cancel
+        </Modal.Action>
+        <Modal.Action type="error" onClick={onDelete}>
+          Delete
         </Modal.Action>
       </Modal>
     </div>

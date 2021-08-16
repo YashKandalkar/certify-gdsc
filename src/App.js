@@ -31,7 +31,9 @@ function App({ firebaseApp }) {
       <div className="App">
         <Page className={"page"}>
           <Page.Header style={{ display: "flex", alignItems: "center" }}>
-            <h2 style={{ marginBottom: 0 }}>Certify GDSC</h2>
+            <Link href="/">
+              <h2 style={{ marginBottom: 0 }}>Certify GDSC</h2>
+            </Link>
             {user && (
               <Button
                 style={{ marginLeft: "auto", minWidth: "fit-content" }}

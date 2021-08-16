@@ -1,5 +1,14 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Note, Spinner, Text, Progress } from "@geist-ui/react";
+import {
+  Note,
+  Spinner,
+  Text,
+  Progress,
+  Tabs,
+  useToasts,
+  Input,
+  Spacer,
+} from "@geist-ui/react";
 import { useParams } from "react-router-dom";
 import {
   getCertificateInfo,
@@ -7,9 +16,10 @@ import {
   uploadImage,
 } from "../firebase/api";
 import { toTitleCase } from "../utils";
-import { Upload } from "@geist-ui/react-icons";
+import { Check, Edit, Upload, X } from "@geist-ui/react-icons";
 import { useDropzone } from "react-dropzone";
 import { Certificate } from "./Certificate";
+import { Responses } from "./Responses";
 
 const centerDiv = {
   minHeight: "40vh",
@@ -24,9 +34,11 @@ export const EditCertificate = ({ user }) => {
     uploading: false,
     percent: 0,
   });
+  const [data, setData] = useState(null);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [, setToast] = useToasts();
   const mounted = useRef(false);
   const params = useParams();
-  const [data, setData] = useState(null);
 
   const onCertificateReceive = (data) => {
     console.log(data);
@@ -58,9 +70,8 @@ export const EditCertificate = ({ user }) => {
         reader.onabort = () => console.error("file reading was aborted");
         reader.onerror = () => console.error("file reading has failed");
         reader.onload = () => {
-          // Do whatever you want with the file contents
           const binaryStr = reader.result;
-          console.log(binaryStr);
+          // start image reading after the file is loaded
           uploadImage(
             user,
             params.id,
@@ -70,7 +81,10 @@ export const EditCertificate = ({ user }) => {
             },
             (downloadUrl) => {
               setUploadProgress({ percent: 100, uploading: false });
-              setData({ ...data, imageUrl: downloadUrl });
+              setData({
+                ...data,
+                imageUrl: downloadUrl,
+              });
               setCertificateInfo(user, params.id, {
                 ...data,
                 imageUrl: downloadUrl,
@@ -78,19 +92,36 @@ export const EditCertificate = ({ user }) => {
             }
           );
         };
+
         reader.readAsArrayBuffer(file);
       });
     },
     [data, params.id, user]
   );
 
+  const onDropRejected = useCallback(
+    (rejectedFiles) => {
+      rejectedFiles.forEach((file) => {
+        setToast("Could not upload file", "error");
+      });
+    },
+    [setToast]
+  );
+
   const { getRootProps, getInputProps } = useDropzone({
     onDropAccepted,
+    onDropRejected,
     accept: "image/*",
     multiple: false,
     maxFiles: 1,
     maxSize: 5e6, // 5 MB
   });
+
+  const onTitleButtonClick = (event) => {
+    // TODO
+    setEditingTitle(!editingTitle);
+    setData({ ...data, title: editingTitle ? data.title : "" });
+  };
 
   return (
     <div>
@@ -108,7 +139,10 @@ export const EditCertificate = ({ user }) => {
           </div>
         ) : data.imageUrl === true ? (
           <>
-            <Text h3>{toTitleCase(data.title)}</Text>
+            <Text h3>
+              {toTitleCase(data.title)}
+              <Edit />
+            </Text>
             <Text p>Upload Your Certificate Template</Text>
             {uploadProgress.uploading ? (
               <div style={{ ...centerDiv, maxWidth: 340, margin: "0 auto" }}>
@@ -134,7 +168,44 @@ export const EditCertificate = ({ user }) => {
             )}
           </>
         ) : (
-          <Certificate id={params.id} data={data} />
+          <>
+            <div style={{ display: "flex", marginBottom: "0.5rem" }}>
+              {editingTitle ? (
+                <Input initialValue={data.title} />
+              ) : (
+                <Text h3 style={{ margin: 0 }}>
+                  {toTitleCase(data.title)}
+                </Text>
+              )}
+              <div
+                style={{
+                  alignItems: "center",
+                  display: "flex",
+                  marginLeft: "0.7rem",
+                  cursor: "pointer",
+                }}
+                onClick={onTitleButtonClick}
+              >
+                {!editingTitle ? (
+                  <Edit />
+                ) : (
+                  <>
+                    <X color={"#aaa"} />
+                    <Spacer w={0.3} />
+                    <Check />
+                  </>
+                )}
+              </div>
+            </div>
+            <Tabs initialValue="1">
+              <Tabs.Item label="Edit" value="1">
+                <Certificate id={params.id} data={data} />
+              </Tabs.Item>
+              <Tabs.Item label="Responses" value="2">
+                <Responses />
+              </Tabs.Item>
+            </Tabs>
+          </>
         )
       ) : (
         <div style={centerDiv}>

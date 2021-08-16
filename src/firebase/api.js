@@ -99,3 +99,18 @@ export const getCertificates = (user, onFinish, onError) => {
     })
     .catch((err) => console.error(err));
 };
+
+export const deleteCertificate = (user, certificateUid, onFinish, onError) => {
+  firebaseApp
+    .database()
+    .ref(`/certificates/${user.uid}/${certificateUid}`)
+    .remove()
+    .then(() => {
+      firebaseApp
+        .database()
+        .ref(`/users/${user.uid}/certificates/${certificateUid}`)
+        .remove()
+        .then(() => onFinish && onFinish());
+    })
+    .catch((err) => console.error(err));
+};
