@@ -18,7 +18,13 @@ export const createCertificate = (user, title, onFinish, onError) => {
         .database()
         .ref(`/users/${user.uid}/certificates/${ref.key}`)
         .set(true)
-        .then(() => onFinish(ref.key));
+        .then(() => {
+          firebaseApp
+            .database()
+            .ref(`/certificatesToUserUid/${ref.key}`)
+            .set(user.uid)
+            .then(() => onFinish(ref.key));
+        });
     })
     .catch((err) => console.error(err));
 };
@@ -38,6 +44,25 @@ export const getCertificateInfo = (
         onFinish(val);
       } else {
         onError();
+      }
+    })
+    .catch((err) => console.error(err));
+};
+
+export const getCertificateInfoForFilling = (
+  certificateUid,
+  onFinish,
+  onError
+) => {
+  firebaseApp
+    .database()
+    .ref(`/certificatesToUserUid/${certificateUid}`)
+    .once("value", (snap) => {
+      const val = snap.val();
+      if (val) {
+        getCertificateInfo({ uid: val }, certificateUid, onFinish, onError);
+      } else {
+        onError && onError();
       }
     })
     .catch((err) => console.error(err));
@@ -110,7 +135,15 @@ export const deleteCertificate = (user, certificateUid, onFinish, onError) => {
         .database()
         .ref(`/users/${user.uid}/certificates/${certificateUid}`)
         .remove()
-        .then(() => onFinish && onFinish());
+        .then(() => {
+          firebaseApp
+            .database()
+            .ref(`/certificatesToUserUid/${certificateUid}`)
+            .remove()
+            .then(() => {
+              onFinish && onFinish();
+            });
+        });
     })
     .catch((err) => console.error(err));
 };

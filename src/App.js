@@ -4,6 +4,7 @@ import { CertificateTable } from "./components/CertificateTable";
 import { EditCertificate } from "./components/EditCertificate";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { Login } from "./components/Login";
+import { FillCertificate } from "./components/FillCertificate";
 
 function App({ firebaseApp }) {
   const [user, setUser] = useState(null);
@@ -30,7 +31,12 @@ function App({ firebaseApp }) {
     <Router>
       <div className="App">
         <Page className={"page"}>
-          <Page.Header style={{ display: "flex", alignItems: "center" }}>
+          <Page.Header
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <Link href="/">
               <h2 style={{ marginBottom: 0 }}>Certify GDSC</h2>
             </Link>
@@ -67,6 +73,9 @@ function App({ firebaseApp }) {
               </Route>
               <Route path="/edit/:id">
                 <EditCertificate user={user} />
+              </Route>
+              <Route path="/fill/:id">
+                <FillCertificate user={user} />
               </Route>
             </Switch>
           </Page.Content>

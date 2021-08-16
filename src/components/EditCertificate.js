@@ -15,19 +15,11 @@ import {
   setCertificateInfo,
   uploadImage,
 } from "../firebase/api";
-import { toTitleCase } from "../utils";
+import { toTitleCase, centerDiv } from "../utils";
 import { Check, Edit, Upload, X } from "@geist-ui/react-icons";
 import { useDropzone } from "react-dropzone";
 import { Certificate } from "./Certificate";
 import { Responses } from "./Responses";
-
-const centerDiv = {
-  minHeight: "40vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  flexDirection: "column",
-};
 
 export const EditCertificate = ({ user }) => {
   const [uploadProgress, setUploadProgress] = useState({
@@ -35,13 +27,14 @@ export const EditCertificate = ({ user }) => {
     percent: 0,
   });
   const [data, setData] = useState(null);
+  const [titleError, setTitleError] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [, setToast] = useToasts();
   const mounted = useRef(false);
+  const titleInputRef = useRef(null);
   const params = useParams();
 
   const onCertificateReceive = (data) => {
-    console.log(data);
     setData(data);
   };
 
@@ -50,10 +43,12 @@ export const EditCertificate = ({ user }) => {
       mounted.current = true;
       if (user) {
         getCertificateInfo(user, params.id, onCertificateReceive, () => {
+          // The certificate doesn't exist or doesn't belong to the user
           setData(false);
           setTimeout(() => (window.location.href = "/"), 4000);
         });
       } else if (user === false) {
+        // The user is not logged in, redirect to the home page
         setTimeout(() => (window.location.href = "/"), 4000);
       }
     }
@@ -117,10 +112,24 @@ export const EditCertificate = ({ user }) => {
     maxSize: 5e6, // 5 MB
   });
 
-  const onTitleButtonClick = (event) => {
-    // TODO
-    setEditingTitle(!editingTitle);
-    setData({ ...data, title: editingTitle ? data.title : "" });
+  const onTitleSave = () => {
+    const trimmed = titleInputRef.current.value.trim();
+    if (trimmed) {
+      setCertificateInfo(
+        user,
+        params.id,
+        {
+          ...data,
+          title: trimmed,
+        },
+        () => {
+          setData({ ...data, title: trimmed });
+          setEditingTitle(false);
+        }
+      );
+    } else {
+      setTitleError(true);
+    }
   };
 
   return (
@@ -139,10 +148,43 @@ export const EditCertificate = ({ user }) => {
           </div>
         ) : data.imageUrl === true ? (
           <>
-            <Text h3>
-              {toTitleCase(data.title)}
-              <Edit />
-            </Text>
+            <div style={{ display: "flex", marginBottom: "0.5rem" }}>
+              {editingTitle ? (
+                <Input
+                  type={titleError ? "error" : "default"}
+                  initialValue={data.title}
+                  ref={titleInputRef}
+                  onChange={() => setTitleError(false)}
+                />
+              ) : (
+                <Text h3 style={{ margin: 0 }}>
+                  {toTitleCase(data.title)}
+                </Text>
+              )}
+              <div
+                style={{
+                  alignItems: "center",
+                  display: "flex",
+                  marginLeft: "0.7rem",
+                  cursor: "pointer",
+                }}
+              >
+                {!editingTitle ? (
+                  <Edit onClick={() => setEditingTitle(true)} />
+                ) : (
+                  <>
+                    <X color={"#666"} onClick={() => setEditingTitle(false)} />
+                    <Spacer w={0.3} />
+                    <Check onClick={() => onTitleSave()} />
+                  </>
+                )}
+              </div>
+            </div>
+            {titleError && (
+              <Text type="error" p>
+                Title cannot be empty!
+              </Text>
+            )}
             <Text p>Upload Your Certificate Template</Text>
             {uploadProgress.uploading ? (
               <div style={{ ...centerDiv, maxWidth: 340, margin: "0 auto" }}>
@@ -171,7 +213,12 @@ export const EditCertificate = ({ user }) => {
           <>
             <div style={{ display: "flex", marginBottom: "0.5rem" }}>
               {editingTitle ? (
-                <Input initialValue={data.title} />
+                <Input
+                  type={titleError ? "error" : "default"}
+                  initialValue={data.title}
+                  ref={titleInputRef}
+                  onChange={() => setTitleError(false)}
+                />
               ) : (
                 <Text h3 style={{ margin: 0 }}>
                   {toTitleCase(data.title)}
@@ -184,19 +231,23 @@ export const EditCertificate = ({ user }) => {
                   marginLeft: "0.7rem",
                   cursor: "pointer",
                 }}
-                onClick={onTitleButtonClick}
               >
                 {!editingTitle ? (
-                  <Edit />
+                  <Edit onClick={() => setEditingTitle(true)} />
                 ) : (
                   <>
-                    <X color={"#aaa"} />
+                    <X color={"#666"} onClick={() => setEditingTitle(false)} />
                     <Spacer w={0.3} />
-                    <Check />
+                    <Check onClick={() => onTitleSave()} />
                   </>
                 )}
               </div>
             </div>
+            {titleError && (
+              <Text type="error" p>
+                Title cannot be empty!
+              </Text>
+            )}
             <Tabs initialValue="1">
               <Tabs.Item label="Edit" value="1">
                 <Certificate id={params.id} data={data} />
