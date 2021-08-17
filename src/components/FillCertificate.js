@@ -91,7 +91,8 @@ export const FillCertificate = ({ user }) => {
       ctx.fillText(
         name,
         bounds.xPercent * imageRef.current.width,
-        bounds.yPercent * imageRef.current.height + 1
+        bounds.yPercent * imageRef.current.height + 1,
+        bounds.widthPercent * imageRef.current.width
       );
 
       const link = document.getElementById("link");
@@ -157,46 +158,47 @@ export const FillCertificate = ({ user }) => {
               </div>
             </Card>
             <Spacer h={1.5} />
-            <div
-              style={{
-                position: "relative",
-                maxWidth: 640,
-                margin: "0 auto",
-                lineHeight: 1,
-              }}
-            >
-              <img
-                alt="Certificate Template"
-                ref={imageRef}
-                src={data.imageUrl}
+            <div style={{ display: "flex" }}>
+              <div
                 style={{
-                  borderRadius: 6,
-                  boxShadow: "rgb(136 136 136) 3px 3px 5px",
+                  position: "relative",
+                  maxWidth: 640,
+                  margin: "0 auto",
+                  lineHeight: 1,
                 }}
-              />
-              {imageRef.current && (
-                <Rnd
-                  disableDragging
-                  enableResizing={false}
-                  size={{
-                    width: bounds.widthPercent * imageRef.current.width,
-                    height: bounds.heightPercent * imageRef.current.height,
-                  }}
-                  position={{
-                    x: bounds.xPercent * imageRef.current.width,
-                    y: bounds.yPercent * imageRef.current.height,
-                  }}
-                  bounds={"parent"}
+              >
+                <img
+                  alt="Certificate Template"
+                  ref={imageRef}
+                  src={data.imageUrl}
                   style={{
-                    border: "1px solid #ccc",
-                    color: data.textColor,
-                    fontSize: data.textFont,
-                    lineHeight: 1,
+                    borderRadius: 6,
+                    boxShadow: "rgb(136 136 136) 3px 3px 5px",
                   }}
-                >
-                  {name}
-                </Rnd>
-              )}
+                />
+                {imageRef.current && (
+                  <Rnd
+                    disableDragging
+                    enableResizing={false}
+                    size={{
+                      width: bounds.widthPercent * imageRef.current.width,
+                      height: bounds.heightPercent * imageRef.current.height,
+                    }}
+                    position={{
+                      x: bounds.xPercent * imageRef.current.width,
+                      y: bounds.yPercent * imageRef.current.height,
+                    }}
+                    bounds={"parent"}
+                    style={{
+                      color: data.textColor,
+                      fontSize: data.textFont,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {name}
+                  </Rnd>
+                )}
+              </div>
             </div>
             <Button
               type={"success"}

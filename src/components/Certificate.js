@@ -115,68 +115,70 @@ export const Certificate = ({ data, id }) => {
       </Card>
 
       <Spacer h={3} />
-      <div style={{ position: "relative", maxWidth: 640, margin: "0 auto" }}>
-        <img
-          alt="Certificate Template"
-          ref={imageRef}
-          src={data.imageUrl}
-          onLoad={() => setImageLoaded(true)}
-          style={{
-            borderRadius: 6,
-            boxShadow: "rgb(136 136 136) 3px 3px 5px",
-          }}
-        />
-        {imageLoaded ? (
-          <Rnd
-            size={{
-              width: bounds.widthPercent * imageRef.current.width,
-              height: bounds.heightPercent * imageRef.current.height,
-            }}
-            position={{
-              x: bounds.xPercent * imageRef.current.width,
-              y: bounds.yPercent * imageRef.current.height,
-            }}
-            onDragStop={(e, d) => {
-              setBounds({
-                ...bounds,
-                xPercent: d.x / imageRef.current.width,
-                yPercent: d.y / imageRef.current.height,
-              });
-              setUnsaved(true);
-            }}
-            onResizeStop={(e, direction, ref, delta, position) => {
-              setBounds({
-                ...bounds,
-                widthPercent:
-                  Number(ref.style.width.slice(0, -2)) /
-                  imageRef.current.width,
-                heightPercent:
-                  Number(ref.style.height.slice(0, -2)) /
-                  imageRef.current.height,
-              });
-              setUnsaved(true);
-            }}
-            bounds={"parent"}
+      <div style={{ display: "flex" }}>
+        <div style={{ position: "relative", maxWidth: 640, margin: "0 auto" }}>
+          <img
+            alt="Certificate Template"
+            ref={imageRef}
+            src={data.imageUrl}
+            onLoad={() => setImageLoaded(true)}
             style={{
-              border: "1px solid #ccc",
-              color: color,
-              fontSize: font,
-              lineHeight: 1,
+              borderRadius: 6,
+              boxShadow: "rgb(136 136 136) 3px 3px 5px",
             }}
-          >
-            Test Name
-          </Rnd>
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Loading />
-          </div>
-        )}
+          />
+          {imageLoaded ? (
+            <Rnd
+              size={{
+                width: bounds.widthPercent * imageRef.current.width,
+                height: bounds.heightPercent * imageRef.current.height,
+              }}
+              position={{
+                x: bounds.xPercent * imageRef.current.width,
+                y: bounds.yPercent * imageRef.current.height,
+              }}
+              onDragStop={(e, d) => {
+                setBounds({
+                  ...bounds,
+                  xPercent: d.x / imageRef.current.width,
+                  yPercent: d.y / imageRef.current.height,
+                });
+                setUnsaved(true);
+              }}
+              onResizeStop={(e, direction, ref, delta, position) => {
+                setBounds({
+                  ...bounds,
+                  widthPercent:
+                    Number(ref.style.width.slice(0, -2)) /
+                    imageRef.current.width,
+                  heightPercent:
+                    Number(ref.style.height.slice(0, -2)) /
+                    imageRef.current.height,
+                });
+                setUnsaved(true);
+              }}
+              bounds={"parent"}
+              style={{
+                border: "1px solid #ccc",
+                color: color,
+                fontSize: font,
+                lineHeight: 1,
+              }}
+            >
+              Test Name
+            </Rnd>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Loading />
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
