@@ -66,7 +66,6 @@ export const EditCertificate = ({ user }) => {
         reader.onerror = () => console.error("file reading has failed");
         reader.onload = () => {
           const binaryStr = reader.result;
-          // start image reading after the file is loaded
           uploadImage(
             user,
             params.id,
@@ -97,7 +96,7 @@ export const EditCertificate = ({ user }) => {
   const onDropRejected = useCallback(
     (rejectedFiles) => {
       rejectedFiles.forEach((file) => {
-        setToast("Could not upload file", "error");
+        setToast({ text: "Could not upload file", type: "error" });
       });
     },
     [setToast]

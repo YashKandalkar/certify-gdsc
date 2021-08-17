@@ -15,6 +15,7 @@ import {
   Button,
 } from "@geist-ui/react";
 import { Download } from "@geist-ui/react-icons";
+import { Rnd } from "react-rnd";
 
 export const FillCertificate = ({ user }) => {
   const [data, setData] = useState(null);
@@ -73,8 +74,11 @@ export const FillCertificate = ({ user }) => {
 
     img.setAttribute("crossOrigin", "Anonymous");
     img.onload = () => {
-      ctx.font = data.textFont.toString() + "px Arial";
+      ctx.font =
+        data.textFont.toString() +
+        'px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
       ctx.fillStyle = data.textColor;
+      ctx.textBaseline = "top";
 
       ctx.drawImage(
         img,
@@ -87,12 +91,7 @@ export const FillCertificate = ({ user }) => {
       ctx.fillText(
         name,
         bounds.xPercent * imageRef.current.width,
-        bounds.yPercent * imageRef.current.height
-      );
-
-      console.log(
-        bounds.xPercent * imageRef.current.width,
-        bounds.yPercent * imageRef.current.height
+        bounds.yPercent * imageRef.current.height + 1
       );
 
       const link = document.getElementById("link");
@@ -103,7 +102,7 @@ export const FillCertificate = ({ user }) => {
           .toDataURL("image/png")
           .replace("image/png", "image/octet-stream")
       );
-      console.log("downloading");
+
       link.click();
       setDownloadLoading(false);
     };
@@ -163,8 +162,7 @@ export const FillCertificate = ({ user }) => {
                 position: "relative",
                 maxWidth: 640,
                 margin: "0 auto",
-                borderRadius: "4px",
-                lineHeight: 0,
+                lineHeight: 1,
               }}
             >
               <img
@@ -177,17 +175,27 @@ export const FillCertificate = ({ user }) => {
                 }}
               />
               {imageRef.current && (
-                <div
+                <Rnd
+                  disableDragging
+                  enableResizing={false}
+                  size={{
+                    width: bounds.widthPercent * imageRef.current.width,
+                    height: bounds.heightPercent * imageRef.current.height,
+                  }}
+                  position={{
+                    x: bounds.xPercent * imageRef.current.width,
+                    y: bounds.yPercent * imageRef.current.height,
+                  }}
+                  bounds={"parent"}
                   style={{
-                    position: "absolute",
-                    left: bounds.xPercent * imageRef.current.width,
-                    top: bounds.yPercent * imageRef.current.height,
+                    border: "1px solid #ccc",
                     color: data.textColor,
                     fontSize: data.textFont,
+                    lineHeight: 1,
                   }}
                 >
                   {name}
-                </div>
+                </Rnd>
               )}
             </div>
             <Button

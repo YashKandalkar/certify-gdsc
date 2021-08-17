@@ -61,48 +61,50 @@ export const CertificateTable = () => {
     if (!mounted.current && certToDelete === null) {
       mounted.current = true;
       getCertificates(user, (data) => {
-        const tableData = Object.entries(data).map(([key, cert]) => {
-          return {
-            title: (
-              <Link href={`/edit/${key}`} color>
-                {toTitleCase(cert.title)}
-              </Link>
-            ),
-            edit: (
-              <Link href={`/edit/${key}`}>
-                <Edit2 size={20} />
-              </Link>
-            ),
-            share: (
-              <div style={{ cursor: "pointer" }}>
-                <Share2
-                  size={20}
-                  onClick={() => {
-                    copyTextToClipboard(
-                      document.location.href + "fill/" + key
-                    );
-                    setToast({
-                      text: "Share link copied to clipboard",
-                      type: "success",
-                    });
-                  }}
-                />
-              </div>
-            ),
-            delete: (
-              <div style={{ cursor: "pointer" }}>
-                <Trash
-                  color="red"
-                  size={20}
-                  onClick={() => {
-                    setDeleteVisible(true);
-                    setCertToDelete(key);
-                  }}
-                />
-              </div>
-            ),
-          };
-        });
+        const tableData = Object.entries(data)
+          .reverse()
+          .map(([key, cert]) => {
+            return {
+              title: (
+                <Link href={`/edit/${key}`} color>
+                  {toTitleCase(cert.title)}
+                </Link>
+              ),
+              edit: (
+                <Link href={`/edit/${key}`}>
+                  <Edit2 size={20} />
+                </Link>
+              ),
+              share: (
+                <div style={{ cursor: "pointer" }}>
+                  <Share2
+                    size={20}
+                    onClick={() => {
+                      copyTextToClipboard(
+                        document.location.href + "fill/" + key
+                      );
+                      setToast({
+                        text: "Share link copied to clipboard",
+                        type: "success",
+                      });
+                    }}
+                  />
+                </div>
+              ),
+              delete: (
+                <div style={{ cursor: "pointer" }}>
+                  <Trash
+                    color="red"
+                    size={20}
+                    onClick={() => {
+                      setDeleteVisible(true);
+                      setCertToDelete(key);
+                    }}
+                  />
+                </div>
+              ),
+            };
+          });
         setCerts(tableData);
       });
     }
@@ -122,7 +124,7 @@ export const CertificateTable = () => {
               justifyContent: "space-between",
             }}
           >
-            <Text h2 style={{ marginBottom: 0 }}>
+            <Text h2 style={{ marginBottom: 0, fontSize: "1.95rem" }}>
               Your Certificates
             </Text>
             <Button

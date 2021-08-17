@@ -130,7 +130,7 @@ export const Certificate = ({ data, id }) => {
           <Rnd
             size={{
               width: bounds.widthPercent * imageRef.current.width,
-              height: bounds.height * imageRef.current.height,
+              height: bounds.heightPercent * imageRef.current.height,
             }}
             position={{
               x: bounds.xPercent * imageRef.current.width,
@@ -161,6 +161,7 @@ export const Certificate = ({ data, id }) => {
               border: "1px solid #ccc",
               color: color,
               fontSize: font,
+              lineHeight: 1,
             }}
           >
             Test Name
