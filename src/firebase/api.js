@@ -13,6 +13,7 @@ export const createCertificate = (user, title, onFinish, onError) => {
         nameTextBoxBounds: true,
         textColor: "#000",
         textFont: 20,
+        passHash: false,
       });
       firebaseApp
         .database()

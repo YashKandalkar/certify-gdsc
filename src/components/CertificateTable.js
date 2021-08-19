@@ -1,17 +1,18 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import {
   Button,
   Text,
   Modal,
-  useModal,
   Input,
   Table,
   Link,
   Spacer,
   Spinner,
+  Select,
+  useModal,
   useToasts,
 } from "@geist-ui/react";
-import { Edit2, Share2, Trash } from "@geist-ui/react-icons";
+import { Share2, Trash } from "@geist-ui/react-icons";
 import { useState } from "react";
 import {
   createCertificate,
@@ -23,8 +24,9 @@ import { copyTextToClipboard, toTitleCase } from "../utils";
 
 export const CertificateTable = () => {
   const [loading, setLoading] = useState(false);
-  const [certs, setCerts] = useState(null);
+  const [rawCertData, setRawCertData] = useState(null);
   const [certToDelete, setCertToDelete] = useState(null);
+  const [certToMakePrivate, setCertToMakePrivate] = useState(null);
   const mounted = useRef(false);
   const inputRef = useRef(null);
   const [, setToast] = useToasts();
@@ -34,6 +36,11 @@ export const CertificateTable = () => {
     visible: deleteVisible,
     setVisible: setDeleteVisible,
     bindings: deleteBindings,
+  } = useModal();
+  const {
+    visible: privateModalVisible,
+    setVisible: setPrivateModalVisible,
+    bindings: privateModalBindings,
   } = useModal();
 
   const onCreate = (refKey) => {
@@ -57,65 +64,116 @@ export const CertificateTable = () => {
     setDeleteVisible(false);
   };
 
+  const onSelectChange = useCallback(
+    (certificateUid, value) => {
+      if (value === "public") {
+        setRawCertData({
+          ...rawCertData,
+          [certificateUid]: {
+            ...rawCertData[certificateUid],
+            passHash: false,
+          },
+        });
+      } else if (value === "private") {
+        setPrivateModalVisible(true);
+        setCertToMakePrivate(certificateUid);
+      }
+    },
+    [rawCertData, setPrivateModalVisible]
+  );
+
   useEffect(() => {
     if (!mounted.current && certToDelete === null) {
       mounted.current = true;
       getCertificates(user, (data) => {
-        const tableData = Object.entries(data)
-          .reverse()
-          .map(([key, cert]) => {
-            return {
-              title: (
-                <Link href={`/edit/${key}`} color>
-                  {toTitleCase(cert.title)}
-                </Link>
-              ),
-              edit: (
-                <Link href={`/edit/${key}`}>
-                  <Edit2 size={20} />
-                </Link>
-              ),
-              share: (
-                <div style={{ cursor: "pointer" }}>
-                  <Share2
-                    size={20}
-                    onClick={() => {
-                      copyTextToClipboard(
-                        document.location.href + "fill/" + key
-                      );
-                      setToast({
-                        text: "Share link copied to clipboard",
-                        type: "success",
-                      });
-                    }}
-                  />
-                </div>
-              ),
-              delete: (
-                <div style={{ cursor: "pointer" }}>
-                  <Trash
-                    color="red"
-                    size={20}
-                    onClick={() => {
-                      setDeleteVisible(true);
-                      setCertToDelete(key);
-                    }}
-                  />
-                </div>
-              ),
-            };
-          });
-        setCerts(tableData);
+        setRawCertData(data);
       });
     }
     return () => {
       mounted.current = false;
     };
-  }, [setDeleteVisible, user, certToDelete, setToast]);
+  }, [certToDelete, user]);
 
+  const onPrivateModalCancel = () => {
+    setRawCertData({
+      ...rawCertData,
+      [certToMakePrivate]: {
+        ...rawCertData[certToMakePrivate],
+        passHash: false,
+      },
+    });
+    document.getElementById(certToMakePrivate).value = "public";
+    console.log(document.getElementById(certToMakePrivate));
+    setPrivateModalVisible(false);
+    setCertToMakePrivate(null);
+  };
+
+  let tableData;
+  if (rawCertData) {
+    tableData = Object.entries(rawCertData)
+      .reverse()
+      .map(([key, cert]) => {
+        console.log(cert.passHash === false ? "public" : "private");
+        return {
+          title: (
+            <Link href={`/edit/${key}`} color>
+              {toTitleCase(cert.title)}
+            </Link>
+          ),
+          visibility: (
+            <Select
+              key={key}
+              id={key}
+              placeholder="Visibility"
+              value={"public"}
+              initialValue={"public"}
+              onChange={(val) => onSelectChange(key, val)}
+              dropdownStyle={{
+                overflow: "hidden",
+                marginTop: -18,
+              }}
+            >
+              <Select.Option
+                style={{ maxWidth: "70px !important" }}
+                value="public"
+              >
+                Public
+              </Select.Option>
+              <Select.Option value="private">Private</Select.Option>
+            </Select>
+          ),
+          share: (
+            <div style={{ cursor: "pointer" }}>
+              <Share2
+                size={20}
+                onClick={() => {
+                  copyTextToClipboard(document.location.href + "fill/" + key);
+                  setToast({
+                    text: "Share link copied to clipboard",
+                    type: "success",
+                  });
+                }}
+              />
+            </div>
+          ),
+          delete: (
+            <div style={{ cursor: "pointer" }}>
+              <Trash
+                color="red"
+                size={20}
+                onClick={() => {
+                  setDeleteVisible(true);
+                  setCertToDelete(key);
+                }}
+              />
+            </div>
+          ),
+        };
+      });
+  }
   return (
     <div>
-      {certs?.length ? (
+      {Object.keys(rawCertData || {}).length ? (
         <>
           <div
             style={{
@@ -140,9 +198,9 @@ export const CertificateTable = () => {
           </Text>
           <Spacer h={2} />
 
-          <Table data={certs}>
+          <Table data={tableData}>
             <Table.Column prop="title" label="Title" />
-            <Table.Column prop="edit" label="edit" width={70} />
+            <Table.Column prop="visibility" label="Visibility" width={150} />
             <Table.Column prop="delete" label="delete" width={70} />
             <Table.Column prop="share" label="share" width={70} />
           </Table>
@@ -157,7 +215,7 @@ export const CertificateTable = () => {
             flexDirection: "column",
           }}
         >
-          {certs === null ? (
+          {rawCertData === null ? (
             <Spinner />
           ) : (
             <>
@@ -201,6 +259,27 @@ export const CertificateTable = () => {
         </Modal.Action>
         <Modal.Action type="error" onClick={onDelete}>
           Delete
+        </Modal.Action>
+      </Modal>
+      <Modal
+        onTouchCancel={onPrivateModalCancel}
+        visible={privateModalVisible}
+        {...privateModalBindings}
+      >
+        <Modal.Title>Private</Modal.Title>
+        <Modal.Subtitle>Make Certificate Private</Modal.Subtitle>
+        <Modal.Content>
+          <p>
+            Private Certificates require a password to be filled and
+            downloaded.
+          </p>
+          <Input placeholder={"Password"} w={"100%"} />
+        </Modal.Content>
+        <Modal.Action passive onClick={onPrivateModalCancel}>
+          Cancel
+        </Modal.Action>
+        <Modal.Action type="error" onClick={console.log}>
+          Make Private
         </Modal.Action>
       </Modal>
     </div>
